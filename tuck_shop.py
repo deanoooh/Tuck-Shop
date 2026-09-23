@@ -23,6 +23,12 @@ except FileNotFoundError:
 # Clean up column names just in case of stray spaces
 df.columns = [c.strip() for c in df.columns]
 
+# Make sure prices are numbers. The CSV's spreadsheet formulas are not evaluated
+# by pandas, so calculate the saving here for display in the app.
+df["Price"] = pd.to_numeric(df["Price"], errors="coerce")
+df["Supermarket RRP"] = pd.to_numeric(df["Supermarket RRP"], errors="coerce")
+df["Saving"] = (df["Supermarket RRP"] - df["Price"]).round(2)
+
 # --- Search box ---
 search = st.text_input("🔍 Search for an item")
 
@@ -43,7 +49,8 @@ if not sale_items.empty:
     st.subheader("🔥 On Sale This Week")
     for _, row in sale_items.iterrows():
         note = f" — {row['Sale Note']}" if pd.notna(row["Sale Note"]) and str(row["Sale Note"]).strip() else ""
-        st.markdown(f"**{row['Item']}** — £{row['Price']:.2f}{note}")
+        saving = f" — save £{row['Saving']:.2f} vs supermarket" if pd.notna(row["Saving"]) else ""
+        st.markdown(f"**{row['Item']}** — £{row['Price']:.2f}{saving}{note}")
     st.divider()
 
 # --- Full list, grouped by category ---
@@ -55,9 +62,15 @@ else:
     for category in sorted(filtered["Category"].dropna().unique()):
         st.markdown(f"### {category}")
         cat_items = filtered[filtered["Category"] == category]
-        # Simple table: Item + Price
-        display_df = cat_items[["Item", "Price"]].copy()
-        display_df["Price"] = display_df["Price"].apply(lambda p: f"£{p:.2f}")
+        # Show the app price and saving versus the supermarket RRP.
+        display_df = cat_items[["Item", "Price", "Saving"]].copy()
+        display_df["Price"] = display_df["Price"].apply(
+            lambda p: f"£{p:.2f}" if pd.notna(p) else ""
+        )
+        display_df["Saving"] = display_df["Saving"].apply(
+            lambda s: f"£{s:.2f}" if pd.notna(s) else ""
+        )
+        display_df = display_df.rename(columns={"Saving": "Saving vs supermarket"})
         st.table(display_df.set_index("Item"))
 
 st.divider()
