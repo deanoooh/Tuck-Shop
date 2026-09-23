@@ -7,7 +7,7 @@ Graze - Chilli & Lime,Snacks,1.50,2.50,"=IF(OR(C6="" ,D6=""),"",ROUND(D6-C6,2))"
 Graze - Smokey BBQ Crunch,Snacks,1.50,2.50,"=IF(OR(C7="" ,D7=""),"",ROUND(D7-C7,2))",No,
 Graze - Teriyaki,Snacks,1.50,2.50,"=IF(OR(C8="" ,D8=""),"",ROUND(D8-C8,2))",No,
 Border Dark Chocolate Ginger Bar,Snacks,0.30,,"=IF(OR(C9="" ,D9=""),"",ROUND(D9-C9,2))",No,
-Border Milk Chocolate Ginger Bar,0.30,,"=IF(OR(C10="" ,D10=""),"",ROUND(D10-C10,2))",No,
+Border Milk Chocolate Ginger Bar,Snacks,0.30,,"=IF(OR(C10="" ,D10=""),"",ROUND(D10-C10,2))",No,
 Dairy Milk 110g,Chocolate,1.30,,"=IF(OR(C11="" ,D11=""),"",ROUND(D11-C11,2))",No,
 Galaxy Hazelnut Praline DAIRY/GLUTEN FREE 100g,Vegan,1.00,,"=IF(OR(C12="" ,D12=""),"",ROUND(D12-C12,2))",No,
 Rowntree Fruit Pastilles,Sweets,1.00,,"=IF(OR(C13="" ,D13=""),"",ROUND(D13-C13,2))",No,
