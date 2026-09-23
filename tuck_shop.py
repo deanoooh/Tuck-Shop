@@ -49,11 +49,13 @@ if not sale_items.empty:
     st.subheader("🔥 On Sale This Week")
     for _, row in sale_items.iterrows():
         note = f" — {row['Sale Note']}" if pd.notna(row["Sale Note"]) and str(row["Sale Note"]).strip() else ""
-        supermarket_price = f" — supermarket £{row['Supermarket RRP']:.2f}" if pd.notna(row["Supermarket RRP"]) else ""
-        saving = f" — <span style='color: green; font-weight: bold;'>save £{row['Saving']:.2f} vs supermarket</span>" if pd.notna(row["Saving"]) else ""
+        supermarket_value = ""
+        if pd.notna(row["Supermarket RRP"]):
+            supermarket_value = f" — supermarket £{row['Supermarket RRP']:.2f}"
+            if pd.notna(row["Saving"]):
+                supermarket_value += f" (save £{row['Saving']:.2f})"
         st.markdown(
-            f"**{row['Item']}** — £{row['Price']:.2f}{supermarket_price}{saving}{note}",
-            unsafe_allow_html=True,
+            f"**{row['Item']}** — **£{row['Price']:.2f}**{supermarket_value}{note}"
         )
     st.divider()
 
@@ -67,29 +69,35 @@ else:
         st.markdown(f"### {category}")
         cat_items = filtered[filtered["Category"] == category]
 
-        # Keep the columns in a clear order and retain numeric values for styling.
+        # Combine the supermarket RRP and saving into one compact value column.
         display_df = cat_items[["Item", "Price", "Supermarket RRP", "Saving"]].copy()
-        display_df = display_df.rename(
-            columns={
-                "Price": "Tuck Shop Price",
-                "Supermarket RRP": "Supermarket RRP",
-                "Saving": "Saving",
-            }
+        display_df["Supermarket Value"] = display_df.apply(
+            lambda row: (
+                f"£{row['Supermarket RRP']:.2f} (save £{row['Saving']:.2f})"
+                if pd.notna(row["Supermarket RRP"]) and pd.notna(row["Saving"])
+                else f"£{row['Supermarket RRP']:.2f}"
+                if pd.notna(row["Supermarket RRP"])
+                else ""
+            ),
+            axis=1,
+        )
+        display_df = display_df[["Item", "Price", "Supermarket Value"]].rename(
+            columns={"Price": "Tuck Shop Price"}
         ).set_index("Item")
 
-        # Format all prices as pounds and highlight savings in green.
+        # Keep the tuck-shop price bold and the combined supermarket value muted.
         styled_df = (
             display_df.style
-            .format(
-                {
-                    "Tuck Shop Price": lambda p: f"£{p:.2f}" if pd.notna(p) else "",
-                    "Supermarket RRP": lambda r: f"£{r:.2f}" if pd.notna(r) else "",
-                    "Saving": lambda s: f"£{s:.2f}" if pd.notna(s) else "",
-                }
+            .format({
+                "Tuck Shop Price": lambda p: f"£{p:.2f}" if pd.notna(p) else "",
+            })
+            .apply(
+                lambda s: s.map(lambda v: "font-weight: bold;" if pd.notna(v) else ""),
+                subset=["Tuck Shop Price"],
             )
-            .map(
-                lambda s: "color: green; font-weight: bold;" if pd.notna(s) and s > 0 else "",
-                subset=["Saving"],
+            .apply(
+                lambda s: s.map(lambda v: "color: #6c757d;" if pd.notna(v) and v else ""),
+                subset=["Supermarket Value"],
             )
         )
         st.dataframe(styled_df, use_container_width=True)
