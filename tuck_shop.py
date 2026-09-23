@@ -50,8 +50,11 @@ if not sale_items.empty:
     for _, row in sale_items.iterrows():
         note = f" — {row['Sale Note']}" if pd.notna(row["Sale Note"]) and str(row["Sale Note"]).strip() else ""
         supermarket_price = f" — supermarket £{row['Supermarket RRP']:.2f}" if pd.notna(row["Supermarket RRP"]) else ""
-        saving = f" — save £{row['Saving']:.2f} vs supermarket" if pd.notna(row["Saving"]) else ""
-        st.markdown(f"**{row['Item']}** — £{row['Price']:.2f}{supermarket_price}{saving}{note}")
+        saving = f" — <span style='color: green; font-weight: bold;'>save £{row['Saving']:.2f} vs supermarket</span>" if pd.notna(row["Saving"]) else ""
+        st.markdown(
+            f"**{row['Item']}** — £{row['Price']:.2f}{supermarket_price}{saving}{note}",
+            unsafe_allow_html=True,
+        )
     st.divider()
 
 # --- Full list, grouped by category ---
@@ -63,19 +66,33 @@ else:
     for category in sorted(filtered["Category"].dropna().unique()):
         st.markdown(f"### {category}")
         cat_items = filtered[filtered["Category"] == category]
-        # Show the tuck shop price, supermarket RRP, and the saving versus the supermarket.
+
+        # Keep the columns in a clear order and retain numeric values for styling.
         display_df = cat_items[["Item", "Price", "Supermarket RRP", "Saving"]].copy()
-        display_df["Price"] = display_df["Price"].apply(
-            lambda p: f"£{p:.2f}" if pd.notna(p) else ""
+        display_df = display_df.rename(
+            columns={
+                "Price": "Tuck Shop Price",
+                "Supermarket RRP": "Supermarket RRP",
+                "Saving": "Saving",
+            }
+        ).set_index("Item")
+
+        # Format all prices as pounds and highlight savings in green.
+        styled_df = (
+            display_df.style
+            .format(
+                {
+                    "Tuck Shop Price": lambda p: f"£{p:.2f}" if pd.notna(p) else "",
+                    "Supermarket RRP": lambda r: f"£{r:.2f}" if pd.notna(r) else "",
+                    "Saving": lambda s: f"£{s:.2f}" if pd.notna(s) else "",
+                }
+            )
+            .map(
+                lambda s: "color: green; font-weight: bold;" if pd.notna(s) and s > 0 else "",
+                subset=["Saving"],
+            )
         )
-        display_df["Supermarket RRP"] = display_df["Supermarket RRP"].apply(
-            lambda r: f"£{r:.2f}" if pd.notna(r) else ""
-        )
-        display_df["Saving"] = display_df["Saving"].apply(
-            lambda s: f"£{s:.2f}" if pd.notna(s) else ""
-        )
-        display_df = display_df.rename(columns={"Supermarket RRP": "Supermarket RRP", "Saving": "Saving vs supermarket"})
-        st.table(display_df.set_index("Item"))
+        st.dataframe(styled_df, use_container_width=True)
 
 st.divider()
 st.caption("Prices last updated by editing tuck_shop_items.csv in GitHub.")
