@@ -1,3 +1,7 @@
+import os
+import csv
+from datetime import datetime
+
 import streamlit as st
 import pandas as pd
 
@@ -111,11 +115,28 @@ st.caption("Let us know what items you'd like to see in the Tuck Shop!")
 
 with st.form("feedback_form", clear_on_submit=True):
     name = st.text_input("Your name (optional)")
-    suggestion = st.text_area("What would you like us to stock?", placeholder="e.g. Almond butter, Oat milk, Energy bars...", height=100)
+    suggestion = st.text_area(
+        "What would you like us to stock?",
+        placeholder="e.g. Almond butter, Oat milk, Energy bars...",
+        height=100,
+    )
     submitted = st.form_submit_button("Submit Suggestion", use_container_width=True)
-    
+
     if submitted:
         if suggestion.strip():
+            suggestions_file = os.path.join(os.path.dirname(__file__) or ".", "suggestions.csv")
+            file_exists = os.path.exists(suggestions_file)
+
+            with open(suggestions_file, "a", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                if not file_exists:
+                    writer.writerow(["Timestamp", "Name", "Suggestion"])
+                writer.writerow([
+                    datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    name.strip() if name.strip() else "Anonymous",
+                    suggestion.strip(),
+                ])
+
             st.success("✅ Thanks for your suggestion! We'll take it into consideration.")
         else:
             st.warning("Please enter a suggestion before submitting.")
