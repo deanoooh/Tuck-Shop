@@ -65,3 +65,4 @@ Cadbury Bitsa Wispa 100g,Chocolate,1.25,2.00,"=IF(OR(C64="" ,D64=""),"",ROUND(D6
 Pink Lady Apples,Fruit,0.60,0.75,"=IF(OR(C65="" ,D65=""),"",ROUND(D65-C65,2))",No,
 San Miguel Glass Chalice,Home and Garden,1.50,5.00,"=IF(OR(C66="" ,D66=""),"",ROUND(D66-C66,2))",No,
 Cadbury Dairy Milk Fingers 114g,Chocolate,1.50,2.24,"=IF(OR(C67="" ,D67=""),"",ROUND(D67-C67,2))",No,
+Suree Chilli Oil 150ml,Stock Cupboard,1.00,1.88,"=IF(OR(C68="" ,D68=""),"",ROUND(D68-C68,2))",No,
