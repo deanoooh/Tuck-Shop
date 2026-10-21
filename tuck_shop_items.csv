@@ -75,3 +75,5 @@ Kallø Caramel Popped Corn Cakes,Stock Cupboard,1.50,3.00,"=IF(OR(C74="" ,D74=""
 Kallø Cinanamon Popped Corn Cakes,Stock Cupboard,1.50,3.00,"=IF(OR(C75="" ,D75=""),"",ROUND(D75-C75,2))",No,
 Kallø Sweet and Salty Popped Corn Cakes,Stock Cupboard,1.50,3.00,"=IF(OR(C76="" ,D76=""),"",ROUND(D76-C76,2))",No,
 Love Corn - Sweet & Salty 20g,Snacks,0.50,,"=IF(OR(C77="" ,D77=""),"",ROUND(D77-C77,2))",No,
+Doritos 3D Crunch,Snacks,1.00,1.35,"=IF(OR(C78="" ,D78=""),"",ROUND(D78-C78,2))",No,
+Exceptional Gianduja,Chocolate,1.50,2.30,"=IF(OR(C79="" ,D79=""),"",ROUND(D79-C79,2))",No,
