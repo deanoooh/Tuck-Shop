@@ -1,6 +1,8 @@
 import os
 import csv
+import smtplib
 from datetime import datetime
+from email.message import EmailMessage
 
 import streamlit as st
 import pandas as pd
@@ -16,6 +18,49 @@ st.set_page_config(page_title="Tuck Shop", page_icon="🛒", layout="centered")
 
 st.title("🛒 Tuck Shop Price List")
 st.caption("Prices and sale items — pay via the honesty box as usual!")
+
+
+def save_suggestion_to_csv(name: str, suggestion: str):
+    suggestions_file = os.path.join(os.path.dirname(__file__) or ".", "suggestions.csv")
+    file_exists = os.path.exists(suggestions_file)
+
+    with open(suggestions_file, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(["Timestamp", "Name", "Suggestion"])
+        writer.writerow([
+            datetime.now().strftime("%Y-%m-%d %H:%M"),
+            name.strip() if name.strip() else "Anonymous",
+            suggestion.strip(),
+        ])
+
+
+def send_suggestion_email(name: str, suggestion: str):
+    recipient = os.environ.get("SUGGESTION_EMAIL")
+    smtp_server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
+    smtp_port = int(os.environ.get("SMTP_PORT", "465"))
+    smtp_user = os.environ.get("SMTP_USERNAME") or os.environ.get("SMTP_EMAIL")
+    smtp_password = os.environ.get("SMTP_PASSWORD")
+
+    if not recipient or not smtp_user or not smtp_password:
+        raise ValueError(
+            "Missing email configuration. Set SUGGESTION_EMAIL, SMTP_USERNAME/SMTP_EMAIL, and SMTP_PASSWORD."
+        )
+
+    message = EmailMessage()
+    message["Subject"] = "New Tuck Shop Suggestion"
+    message["From"] = smtp_user
+    message["To"] = recipient
+    message.set_content(
+        f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
+        f"Name: {name}\n\n"
+        f"Suggestion:\n{suggestion}"
+    )
+
+    with smtplib.SMTP_SSL(smtp_server, smtp_port) as smtp:
+        smtp.login(smtp_user, smtp_password)
+        smtp.send_message(message)
+
 
 # Load the data
 try:
@@ -124,19 +169,26 @@ with st.form("feedback_form", clear_on_submit=True):
 
     if submitted:
         if suggestion.strip():
-            suggestions_file = os.path.join(os.path.dirname(__file__) or ".", "suggestions.csv")
-            file_exists = os.path.exists(suggestions_file)
+            clean_name = name.strip() if name.strip() else "Anonymous"
+            clean_suggestion = suggestion.strip()
 
-            with open(suggestions_file, "a", newline="", encoding="utf-8") as f:
-                writer = csv.writer(f)
-                if not file_exists:
-                    writer.writerow(["Timestamp", "Name", "Suggestion"])
-                writer.writerow([
-                    datetime.now().strftime("%Y-%m-%d %H:%M"),
-                    name.strip() if name.strip() else "Anonymous",
-                    suggestion.strip(),
-                ])
+            # Always keep a local backup in the repository/app folder.
+            save_suggestion_to_csv(clean_name, clean_suggestion)
 
-            st.success("✅ Thanks for your suggestion! We'll take it into consideration.")
+            # Try to send an email if SMTP is configured.
+            email_ok = False
+            try:
+                send_suggestion_email(clean_name, clean_suggestion)
+                email_ok = True
+            except Exception as exc:
+                st.warning(
+                    "✅ Suggestion saved locally, but email alert failed. "
+                    f"Check your SMTP settings: {exc}"
+                )
+
+            if email_ok:
+                st.success(
+                    "✅ Thanks for your suggestion! It has been saved locally and emailed to the configured inbox."
+                )
         else:
             st.warning("Please enter a suggestion before submitting.")
