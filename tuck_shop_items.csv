@@ -77,3 +77,5 @@ Kallø Sweet and Salty Popped Corn Cakes,Stock Cupboard,1.50,3.00,"=IF(OR(C76=""
 Love Corn - Sweet & Salty 20g,Snacks,0.50,,"=IF(OR(C77="" ,D77=""),"",ROUND(D77-C77,2))",No,
 Doritos 3D Crunch Nacho Cheese,Snacks,1.00,1.35,"=IF(OR(C78="" ,D78=""),"",ROUND(D78-C78,2))",No,
 Exceptional Gianduja,Chocolate,1.50,2.30,"=IF(OR(C79="" ,D79=""),"",ROUND(D79-C79,2))",No,
+Wotsits Giants Really Cheesy 130g,Snacks,1.50,1.65,"=IF(OR(C80="" ,D80=""),"",ROUND(D80-C80,2))",No,
+Wotsits Giants Sweet & Spicy 130g,Snacks,1.50,1.65,"=IF(OR(C80="" ,D80=""),"",ROUND(D80-C80,2))",No,
